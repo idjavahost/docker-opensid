@@ -1,0 +1,5 @@
+<?php
+$db['default']['hostname'] = '{{ default .Env.DATABASE_HOSTNAME "localhost" }}';
+$db['default']['username'] = '{{ default .Env.DATABASE_USERNAME "root" }}';
+$db['default']['password'] = '{{ default .Env.DATABASE_PASSWORD "" }}';
+$db['default']['database'] = '{{ default .Env.DATABASE_NAME "opensid" }}';

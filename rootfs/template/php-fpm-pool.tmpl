@@ -1,0 +1,20 @@
+[global]
+error_log = /proc/self/fd/2
+
+[www]
+clear_env = no
+user = {{ .Env.USERNAME }}
+group = {{ .Env.USERGROUP }}
+listen = /run/php-fpm.sock
+listen.owner = {{ .Env.USERNAME }}
+listen.group = {{ .Env.USERGROUP }}
+pm = dynamic
+pm.max_children = {{ default .Env.FPM_MAX_CHILDREN "5" }}
+pm.start_servers = {{ default .Env.FPM_START_SERVER "2" }}
+pm.min_spare_servers = {{ default .Env.FPM_MIN_SPARE_SERVERS "1" }}
+pm.max_spare_servers = {{ default .Env.FPM_MAX_SPARE_SERVERS "3" }}
+chdir = /
+catch_workers_output = yes
+access.log = /proc/self/fd/1
+php_admin_value[error_log] = {{ default .Env.FPM_ERROR_LOG "/dev/fd/2" }}
+php_admin_flag[log_errors] = on

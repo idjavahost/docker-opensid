@@ -1,0 +1,47 @@
+version: '2'
+
+services:
+  mysql:
+    image: mysql/mysql-server:5.7
+    container_name: "mysql"
+    hostname: mysql
+    restart: always
+    networks:
+      opensid:
+        ipv4_address: 172.17.2.2
+    environment:
+      MYSQL_ROOT_PASSWORD: 'qwerty12345'
+      MYSQL_ROOT_HOST: '%'
+
+  opensid:
+    image: opensid
+    container_name: "opensid"
+    hostname: desa
+    restart: always
+    networks:
+      opensid:
+        ipv4_address: 172.17.2.3
+    depends_on:
+      - mysql
+    environment:
+      - SERVER_NAME=desa.idjavahost.com
+      - USERNAME=desa
+      - SSH_PORT=2221
+      - SSH_PASSWORD=qwerty
+      - ADMIN_USERNAME=superman
+      - ADMIN_PASSWORD=987654321
+      - DATABASE_HOSTNAME=172.17.2.2
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=qwerty12345
+      - DATABASE_NAME=opensid
+    ports:
+      - "2221"
+      - "80"
+
+networks:
+  opensid:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.17.2.0/24
+         gateway: 172.17.2.1

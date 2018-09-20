@@ -1,0 +1,157 @@
+user {{ .Env.USERNAME }};
+
+worker_processes 1;
+pcre_jit on;
+pid /run/nginx.pid;
+error_log /dev/fd/2 error;
+
+include /etc/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    fastcgi_cache_path /var/cache/nginx levels=1:2 keys_zone=OPENSID:100m inactive=60m;
+    fastcgi_cache_key "$scheme$request_method$host$request_uri";
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log {{ .Env.HOME }}/logs/access.log main;
+    # access_log off;
+    server_tokens off;
+
+    client_max_body_size 50M;
+    keepalive_timeout 65;
+    sendfile on;
+    tcp_nodelay on;
+    keepalive_disable  msie6;
+
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 512;
+    gzip_proxied any;
+    gzip_vary on;
+    gzip_disable "msie6";
+    gzip_types
+        text/plain
+        text/css
+        text/x-component
+        text/javascript application/javascript application/x-javascript
+        text/xml application/xml application/rss+xml
+        application/json
+        application/vnd.ms-fontobject
+        font/truetype font/opentype
+        image/svg+xml;
+
+    # php upstream
+    upstream phpfpm {
+        server unix:/run/php-fpm.sock;
+    }
+
+    server {
+        listen 80 default_server;
+        server_name {{ .Env.SERVER_NAME }} www.{{ .Env.SERVER_NAME }};
+
+        root   {{ .Env.HOME }}/opensid;
+        index  index.php index.html;
+
+        add_header X-Frame-Options "SAMEORIGIN";
+        add_header X-XSS-Protection "1; mode=block";
+        add_header X-Content-Type-Options "nosniff";
+
+        # FastCGI cache exceptions
+        set $no_cache   0;
+        set $cache_uri  $request_uri;
+
+        if ($request_method = POST) {
+            set $cache_uri  "null cache";
+            set $no_cache   1;
+        }
+
+        if ($query_string != "") {
+            set $cache_uri  "null cache";
+            set $no_cache   1;
+        }
+
+        if ($request_uri ~* "(/siteman/|/robots.txt)") {
+            set $cache_uri  "null cache";
+            set $no_cache   1;
+        }
+
+        if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+            set $cache_uri  "null cache";
+            set $no_cache   1;
+        }
+
+        set_real_ip_from  {{ default .Env.REAL_IP_FROM "172.17.0.0/16" }};
+        real_ip_header    "X-Forwarded-For";
+        real_ip_recursive on;
+
+        location = /favicon.ico {
+            log_not_found off;
+            access_log off;
+        }
+
+        location = /robots.txt {
+            allow all;
+            log_not_found off;
+            access_log off;
+        }
+
+        location ~ \.(css|htc|js|js2|js3|js4)$ {
+            expires max;
+            add_header Pragma "public";
+            add_header Cache-Control "max-age=31536000, public, must-revalidate, proxy-revalidate";
+        }
+
+        location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|xla|xls|xlsx|xlt|xlw|zip)$ {
+            expires max;
+            add_header Pragma "public";
+            add_header Cache-Control "max-age=31536000, public, must-revalidate, proxy-revalidate";
+            log_not_found off;
+        }
+
+        location ~ /\. {
+            deny all;
+        }
+
+        location ~ ^/logs/ {
+            deny all;
+        }
+
+        location ~ ^/assets/files/[^/]+\.php$ {
+            deny all;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.php;
+            if (!-e $request_filename) {
+                rewrite ^(.*)$ /index.php/$1 break;
+            }
+        }
+
+        location ~ \.php$ {
+            try_files $uri =404;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param HTTPS on;
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_hide_header X-Powered-By;
+            fastcgi_pass phpfpm;
+            fastcgi_no_cache $no_cache;
+            fastcgi_cache_bypass $no_cache;
+            fastcgi_cache OPENSID;
+            fastcgi_cache_valid 200 60m;
+            include fastcgi_params;
+        }
+
+        # Include all extra server configuration
+        include /etc/nginx/conf.d/*.conf;
+    }
+}
