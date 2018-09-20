@@ -131,9 +131,6 @@ http {
 
         location / {
             try_files $uri $uri/ /index.php;
-            if (!-e $request_filename) {
-                rewrite ^(.*)$ /index.php/$1 break;
-            }
         }
 
         location ~ \.php$ {

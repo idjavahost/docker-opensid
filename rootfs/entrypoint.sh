@@ -97,8 +97,10 @@ if [[ ! -f /etc/.setupdone ]]; then
             CONTOH_DATA=$(find ${HOME}/opensid -type f -name 'contoh_data_awal_*')
             echo "Membuat database contoh data awal"
             echo "................"
-            mysql --init-command="SET SESSION sql_mode='IGNORE_SPACE,ALLOW_INVALID_DATES,NO_ENGINE_SUBSTITUTION';" -f \
-                -u $DATABASE_USERNAME -h $DATABASE_HOSTNAME -p"${DATABASE_PASSWORD}" -D $DATABASE_NAME < $CONTOH_DATA
+            mysql -u $DATABASE_USERNAME -h $DATABASE_HOSTNAME -p$DATABASE_PASSWORD \
+                -e "CREATE DATABASE IF NOT EXISTS ${DATABASE_NAME};"
+            mysql --init-command="SET SESSION sql_mode='ALLOW_INVALID_DATES';" -f \
+                -u $DATABASE_USERNAME -h $DATABASE_HOSTNAME -p$DATABASE_PASSWORD -D $DATABASE_NAME < $CONTOH_DATA
             chmod 440 $HOME/opensid/desa/config/database.php
             echo "----------------------------------------------------------"
             echo "SELAMAT, OpenSID berhasil di Install!"

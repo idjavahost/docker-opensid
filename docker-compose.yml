@@ -14,7 +14,7 @@ services:
       MYSQL_ROOT_HOST: '%'
 
   opensid:
-    image: opensid
+    image: idjavahost/opensid:latest
     container_name: "opensid"
     hostname: desa
     restart: always
@@ -26,7 +26,6 @@ services:
     environment:
       - SERVER_NAME=desa.idjavahost.com
       - USERNAME=desa
-      - SSH_PORT=2221
       - SSH_PASSWORD=qwerty
       - ADMIN_USERNAME=superman
       - ADMIN_PASSWORD=987654321
@@ -35,8 +34,8 @@ services:
       - DATABASE_PASSWORD=qwerty12345
       - DATABASE_NAME=opensid
     ports:
-      - "2221"
-      - "80"
+      - "2122:22"
+      - "88:80"
 
 networks:
   opensid:
