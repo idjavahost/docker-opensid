@@ -1,38 +1,42 @@
 version: '2'
 
 services:
-  mysql:
-    image: mysql/mysql-server:5.7
-    container_name: "mysql"
-    hostname: mysql
+  desadb:
+    image: mysql:5.6
+    container_name: "desadb"
+    hostname: desadb
     restart: always
     networks:
       opensid:
-        ipv4_address: 172.17.2.2
+        ipv4_address: 10.10.0.2
     environment:
-      MYSQL_ROOT_PASSWORD: 'qwerty12345'
-      MYSQL_ROOT_HOST: '%'
+      - MYSQL_DATABASE=opensid_db
+      - MYSQL_USER=opensid
+      - MYSQL_PASSWORD=passwdPalingSusahDitebak
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - /tmp/mysql:/var/lib/mysql
 
   opensid:
     image: idjavahost/opensid:latest
     container_name: "opensid"
-    hostname: desa
-    restart: always
+    hostname: opensid
     networks:
       opensid:
-        ipv4_address: 172.17.2.3
+        ipv4_address: 10.10.0.10
     depends_on:
-      - mysql
+      - desadb
     environment:
-      - SERVER_NAME=desa.idjavahost.com
-      - USERNAME=desa
+      - SERVER_NAME=opensid.idjavahost.com
+      - USERNAME=desaku
+      - USERGROUP=desaku
       - SSH_PASSWORD=qwerty
       - ADMIN_USERNAME=superman
       - ADMIN_PASSWORD=987654321
-      - DATABASE_HOSTNAME=172.17.2.2
-      - DATABASE_USERNAME=root
-      - DATABASE_PASSWORD=qwerty12345
-      - DATABASE_NAME=opensid
+      - DATABASE_HOSTNAME=10.10.0.2
+      - DATABASE_USERNAME=opensid
+      - DATABASE_PASSWORD=passwdPalingSusahDitebak
+      - DATABASE_NAME=opensid_db
     ports:
       - "2122:22"
       - "88:80"
@@ -42,5 +46,5 @@ networks:
     driver: bridge
     ipam:
      config:
-       - subnet: 172.17.2.0/24
-         gateway: 172.17.2.1
+       - subnet: 10.10.0.0/24
+         gateway: 10.10.0.1
