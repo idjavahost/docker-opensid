@@ -124,6 +124,10 @@ http {
             deny all;
         }
 
+        location ~ ^/surat {
+            rewrite ^/(.*)$ /index.php/$1 last;
+        }
+
         location / {
             try_files $uri $uri/ /index.php;
 
