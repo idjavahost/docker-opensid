@@ -66,5 +66,5 @@ Temporary Items
 .nfs*
 
 # custom ignore files for container testing only
-./rootfs/template/opensid.tar.gz
-./rootfs/usr/local/bin
+rootfs/template/opensid.tar.gz
+rootfs/usr/local/bin

@@ -3,18 +3,25 @@ set -e
 
 if [[ ! -f /etc/.setupdone ]]; then
 
+    echo "=============================================="
+    echo "               OpenSID SETUP"
+    echo "=============================================="
+    echo " "
+
     if [[ ! -f /usr/local/bin/dockerize ]]; then
-        wget -q https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-        tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-        rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+        if [[ ! -f /root/dockerize.tar.gz ]]; then
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz -O /root/dockerize.tar.gz
+        fi
+        tar -C /usr/local/bin -xzvf /root/dockerize.tar.gz
+        rm /root/dockerize.tar.gz
         chmod +x /usr/local/bin/dockerize
     fi
 
     # SETUP USER
     echo "Membuat user ${USERNAME} ..."
     mkdir -p $HOME/opensid
-    addgroup $USERGROUP
-    adduser -D -h $HOME -s /bin/bash -G $USERGROUP $USERNAME
+    addgroup -g 1000 $USERGROUP
+    adduser -D -u 1000 -h $HOME -s /bin/bash -G $USERGROUP $USERNAME
 
     # SETUP SSH
     echo "Mengatur server SSH ..."
@@ -112,8 +119,13 @@ if [[ ! -f /etc/.setupdone ]]; then
             echo "https://github.com/OpenSID/OpenSID/wiki/Panduan-Install-OpenSID#4-buat-database-sid"
             DATABASE_INSTALLED=0
         fi
+
+        if [[ -f "${HOME}/opensid/desa/config/config.php" ]]; then
+            echo "\$config['index_page'] = '';" >> $HOME/opensid/desa/config/config.php
+        fi
+
         echo "----------------------------------------------------------"
-        echo "Akses Admin Area http://${SERVER_NAME}/index.php/siteman"
+        echo "Akses Admin Area http://${SERVER_NAME}/siteman"
 
         if [[ -v ADMIN_USERNAME && -v ADMIN_PASSWORD && $DATABASE_INSTALLED = '1' ]]; then
             MD5PASS=$(echo -n $ADMIN_PASSWORD | md5sum | awk '{print $1}')
@@ -135,9 +147,14 @@ if [[ ! -f /etc/.setupdone ]]; then
     chown -R $USERNAME:$USERGROUP $HOME
     echo " "
     echo " "
+    echo "=============================================="
+    echo "            OpenSID SETUP FINISH"
+    echo "=============================================="
+    echo " "
 
     # MARK CONTAINER AS INSTALLED
     rm -rf /template
+    rm /usr/local/bin/dockerize
     touch /etc/.setupdone
 fi
 

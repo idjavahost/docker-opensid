@@ -8,22 +8,20 @@ services:
     restart: always
     networks:
       opensid:
-        ipv4_address: 10.10.0.2
+        ipv4_address: 172.27.17.2
     environment:
       - MYSQL_DATABASE=opensid_db
       - MYSQL_USER=opensid
       - MYSQL_PASSWORD=passwdPalingSusahDitebak
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
-    volumes:
-      - /tmp/mysql:/var/lib/mysql
 
   opensid:
-    image: idjavahost/opensid:latest
+    image: opensid:latest
     container_name: "opensid"
     hostname: opensid
     networks:
       opensid:
-        ipv4_address: 10.10.0.10
+        ipv4_address: 172.27.17.1
     depends_on:
       - desadb
     environment:
@@ -33,18 +31,18 @@ services:
       - SSH_PASSWORD=qwerty
       - ADMIN_USERNAME=superman
       - ADMIN_PASSWORD=987654321
-      - DATABASE_HOSTNAME=10.10.0.2
+      - DATABASE_HOSTNAME=172.27.17.2
       - DATABASE_USERNAME=opensid
       - DATABASE_PASSWORD=passwdPalingSusahDitebak
       - DATABASE_NAME=opensid_db
+      - REAL_IP_FROM=172.27.17.0/24
     ports:
-      - "2122:22"
-      - "88:80"
-
+      - "2345:2345"
+      
 networks:
   opensid:
     driver: bridge
     ipam:
      config:
-       - subnet: 10.10.0.0/24
-         gateway: 10.10.0.1
+       - subnet: 172.27.17.0/24
+         gateway: 172.27.17.254

@@ -30,12 +30,11 @@ Selengkapnya di: [docker.com](https://www.docker.com/why-docker)
 * Custom OpenSID admin username dan password
 * Supervisor untuk managemen proses
 
-
 ### Quick Install
 
-```
-$ curl -LO https://raw.githubusercontent.com/idjavahost/docker-opensid/master/docker-compose.yml
-$ docker-compose up
+```bash
+curl -LO https://raw.githubusercontent.com/idjavahost/docker-opensid/master/docker-compose.yml
+docker-compose up
 ```
 
 Untuk mencobanya langsung, bisa clone repository ini lalu build sendiri image nya di local anda. Atau dengan menggunakan `docker-compose.yml` yang telah di sediakan disini. Dengan cara sebagai berikut:
@@ -49,7 +48,6 @@ Untuk mencobanya langsung, bisa clone repository ini lalu build sendiri image ny
 
 **Catatan:** Environment dengan nilai default kosong (-) adalah wajib didefinisikan pada container.
 
-
 | Nama | Default  | Kategori | Fungsi         |
 |------|----------|----------|----------------|
 | `OPENSID_VERSION` | `latest` | System | Digunakan untuk referensi versi OpenSID yang ingin digunakan. Gunakan ```latest``` untuk mengunduh versi paling terbaru OpenSID yang ada di github. |
@@ -57,9 +55,10 @@ Untuk mencobanya langsung, bisa clone repository ini lalu build sendiri image ny
 | `USERGROUP`  | `desa` | System | Group pada linux group yang sama fungsinya dengan `USERNAME` |
 | `HOME` | `/var/www` | System | Direktori home untuk ```USERNAME``` dan ```USERGROUP``` dan untuk base folder website OpenSID |
 | `TZ` | `Asia/Jakarta` | System | Waktu zona yang ingin digunakan di PHP dan linux system |
+| `REAL_IP_FROM` | `172.17.0.0/16` | System | Nginx `set_real_ip_from` jika anda menggunakan container ini untuk publik dan berada di dalam reverse proxy |
 | `DOCKERIZE_VERSION` | `v0.6.1` | System | Utilitas yang berguna untuk container, seperti php.ini dan nginx.conf template. [Selengkapya](https://github.com/jwilder/dockerize) |
 | `SERVER_NAME` | - | System | Nama server atau domain yang ingin digunakan untuk website OpenSID. Harus [FQDN](https://id.wikipedia.org/wiki/Fully_qualified_domain_name). |
-| `SSH_PORT` | `22` | SSH | Port yang digunakan untuk masuk ke server melalui SSH |
+| `SSH_PORT` | `2345` | SSH | Port yang digunakan untuk masuk ke server melalui SSH |
 | `SSH_PUBLIC_KEY` | - | SSH | Tingkatkan keamanan SSH server dengan menggunakan Public Key, jika ini di isi akan menonaktifkan SSH password |
 | `SSH_PASSWORD` | - | SSH | Alternatif, jika `SSH_PUBLIC_KEY` kosong, maka login SSH akan menggunakan password yang di definisikan disini |
 | `PHP_MEMORY_LIMIT` | `128M` | PHP | php.ini variable yang digunakan untuk set maksimum memori yang bisa digunakan oleh PHP |
@@ -88,6 +87,7 @@ Untuk mencobanya langsung, bisa clone repository ini lalu build sendiri image ny
 Laporkan segala jenis error atau bug yang anda temukan di [Issue Tracker GitHub](https://github.com/idjavahost/docker-opensid/issues). Push dan buat merge request jika anda mempunya update terbaru yang ingin disatukan dengan repository ini, siapa saja bebas untuk memasukkan update ke dalam image docker ini.
 
 ### License
+
 MIT
 
 ---
